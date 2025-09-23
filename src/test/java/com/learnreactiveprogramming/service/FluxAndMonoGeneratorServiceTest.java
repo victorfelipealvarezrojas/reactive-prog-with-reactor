@@ -121,4 +121,12 @@ public class FluxAndMonoGeneratorServiceTest {
                 .expectNext(List.of("V","I","C","T","O","R"))
                 .verifyComplete();
     }
+
+    @Test
+    void names_mono_filter_flatmap_many() {
+        var names = fluxAndMonoGeneratorService.names_mono_filter_flatmap_many(3);
+        StepVerifier.create(names)
+                .expectNext("V","I","C","T","O","R")
+                .verifyComplete();
+    }
 }

@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 public class FluxAndMonoGeneratorService {
 
@@ -71,6 +72,30 @@ public class FluxAndMonoGeneratorService {
                 .map(String::toUpperCase)
                 .filter(s -> s.length() > strLeng)
                 .flatMap(this::StringMono);
+    }
+
+    public Flux<String> names_mono_filter_flatmap_many(int strLeng) {
+        return Mono.just("victor")
+                .map(String::toUpperCase)
+                .filter(s -> s.length() > strLeng)
+                .flatMapMany(this::StringFlux);
+    }
+
+    public Flux<String> namesFlux_transform() {
+
+        Function<Flux<String>, Flux<String>> filterMap = (name) -> name.map(String::toUpperCase)
+                        .filter(e -> e.length() > 3);
+
+
+        return Flux.fromIterable(List.of("vi", "fe"))
+                .transform(filterMap)
+                .flatMap(this::splitString)
+                .log();
+    }
+
+    private Flux<String> StringFlux(String s) {
+        var charArray = s.split("");
+        return Flux.fromArray(charArray);
     }
 
     private Mono<List<String>> StringMono(String s) {
