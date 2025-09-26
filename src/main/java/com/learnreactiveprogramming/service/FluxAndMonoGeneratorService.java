@@ -163,6 +163,35 @@ public class FluxAndMonoGeneratorService {
     }
 
     /**
+     * Demuestra el uso del operador concat() para combinar múltiples Flux secuencialmente.
+     *
+     * COMPORTAMIENTO:
+     * - concat() suscribe al primer Flux (abcFlux) y emite TODOS sus elementos
+     * - Solo después de que el primer Flux se complete, suscribe al segundo Flux (defFlux)
+     * - Mantiene el orden estricto: primero todos los elementos de abcFlux, luego todos de defFlux
+     * - Es una operación SECUENCIAL (no paralela)
+     *
+     * RESULTADO ESPERADO: A, B, C, D, E, F (en ese orden exacto)
+     *
+     * DIFERENCIAS CON OTROS OPERADORES:
+     * - vs merge(): concat preserva orden, merge puede intercalar elementos
+     * - vs zip(): concat emite todos los elementos, zip combina elemento por elemento
+     * - vs flatMap(): concat es secuencial, flatMap puede ser asíncrono
+     *
+     * CASOS DE USO:
+     * - Cuando necesitas procesar fuentes de datos en un orden específico
+     * - Combinar resultados de diferentes APIs secuencialmente
+     * - Operaciones que requieren que una termine antes de empezar la siguiente
+     *
+     * @return Flux<String> que emite secuencialmente: "A", "B", "C", "D", "E", "F"
+     */
+    public Flux<String> explore_concat(){
+        var abcFlux =  Flux.just("A","B","C");
+        var defFlux =  Flux.just("D","E","F");
+        return Flux.concat(abcFlux, defFlux);
+    }
+
+    /**
      * Método principal para ejecutar y probar el código
      * subscribe() - Inicia la ejecución del flujo reactivo y consume los elementos
      */

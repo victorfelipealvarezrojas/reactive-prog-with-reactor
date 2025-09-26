@@ -241,5 +241,19 @@ public class FluxAndMonoGeneratorServiceTest {
             StepVerifier.create(namesFlux)
                     .verifyComplete();  // Flux vacío pero completado correctamente
         }
+
+        @Test
+        void explore_concat() {
+            //Given
+            var abcdefFlux = fluxAndMonoGeneratorService.explore_concat();
+
+            //When & Then
+            StepVerifier.create(abcdefFlux)
+                    .expectNext("A","B","C")
+                    .expectNext("D","E")
+                    .expectNext("F")
+                    .verifyComplete();
+
+        }
     }
 }
