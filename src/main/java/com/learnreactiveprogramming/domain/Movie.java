@@ -21,4 +21,9 @@ public class Movie {
         this.reviewList = reviewList;
     }
 
+    public Movie( MovieInfo movie, List<Review> reviewList) {
+        this.movie = movie;
+        this.reviewList = reviewList;
+    }
+
 }

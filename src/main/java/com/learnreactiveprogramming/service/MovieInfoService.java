@@ -11,37 +11,36 @@ import static com.learnreactiveprogramming.util.CommonUtil.delay;
 
 public class MovieInfoService {
 
-    public  Flux<MovieInfo> movieInfoFlux(){
 
+    // reactive
+    public Flux<MovieInfo> movieInfoFlux() {
         var movieInfoList = List.of(
-                new MovieInfo(1l,100l, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15")),
-                new MovieInfo(2l, 101l,"The Dark Knight", 2008, List.of("Christian Bale", "HeathLedger"), LocalDate.parse("2008-07-18")),
-                new MovieInfo(3l, 102l,"Dark Knight Rises", 2008, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20")));
-
+                new MovieInfo(1L, 100L, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15")),
+                new MovieInfo(2L, 101L, "The Dark Knight", 2008, List.of("Christian Bale", "HeathLedger"), LocalDate.parse("2008-07-18")),
+                new MovieInfo(3L, 102L, "Dark Knight Rises", 2008, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20")));
         return Flux.fromIterable(movieInfoList);
     }
 
-    public  Mono<MovieInfo> retrieveMovieInfoMonoUsingId(long movieId){
 
-        var movie = new MovieInfo(movieId, 100l, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
-
+    // reactive
+    public Mono<MovieInfo> retrieveMovieInfoMonoUsingId(long movieId) {
+        var movie = new MovieInfo(movieId, 100L, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
         return Mono.just(movie);
     }
 
-    public  List<MovieInfo> movieList(){
+    // no reactive
+    public List<MovieInfo> movieList() {
         delay(1000);
-        var moviesList = List.of(new MovieInfo(1l,100l, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15")),
-                new MovieInfo(2l, 101l,"The Dark Knight", 2008, List.of("Christian Bale", "HeathLedger"), LocalDate.parse("2008-07-18")),
-                new MovieInfo(3l, 102l,"Dark Knight Rises", 2008, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20")));
-
-        return moviesList;
+        return List.of(
+                new MovieInfo(1L, 100L, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15")),
+                new MovieInfo(2L, 101L, "The Dark Knight", 2008, List.of("Christian Bale", "HeathLedger"), LocalDate.parse("2008-07-18")),
+                new MovieInfo(3L, 102L, "Dark Knight Rises", 2008, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20")));
     }
 
-    public  MovieInfo retrieveMovieUsingId(long movieId){
+
+    // no reactive
+    public MovieInfo retrieveMovieUsingId(long movieId) {
         delay(1000);
-        var movie = new MovieInfo(movieId, 100l, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
-
-        return movie;
+        return new MovieInfo(movieId, 100L, "Batman Begins", 2005, List.of("Christian Bale", "Michael Cane"), LocalDate.parse("2005-06-15"));
     }
-
 }
