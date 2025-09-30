@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
@@ -16,6 +17,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class MovieReactiveServiceTest {
@@ -31,6 +34,8 @@ class MovieReactiveServiceTest {
 
     private Flux<MovieInfo> movieInfoFlux;
     private Flux<Review> reviewsFlux;
+    private Mono<MovieInfo> movieInfoMono;
+    private Flux<Review> reviewsFluxToMovieInfoMono;
 
     @BeforeEach
     void setUp() {
@@ -43,10 +48,21 @@ class MovieReactiveServiceTest {
                         LocalDate.parse("2008-07-18"))
         );
 
+        movieInfoMono = Mono.just(
+                new MovieInfo(1L, 100L, "Batman Begins", 2005,
+                        List.of("Christian Bale", "Michael Cane"),
+                        LocalDate.parse("2005-06-15"))
+        );
+
         reviewsFlux = Flux.just(
                 new Review(1L, "Great movie!", 8.5),
                 new Review(2L, "Excellent!", 9.0),
                 new Review(3L, "wow!", 10.0)
+        );
+
+        reviewsFluxToMovieInfoMono = Flux.just(
+                new Review(1L, "Great movie!", 8.5),
+                new Review(1L, "Excellent!", 9.0)
         );
     }
 
@@ -135,5 +151,38 @@ class MovieReactiveServiceTest {
                         error instanceof RuntimeException &&
                                 error.getMessage().equals("Movie service error"))
                 .verify();
+    }
+
+    @Test
+    void getMovieInfo() {
+        when(movieInfoService.retrieveMovieInfoMonoUsingId(anyLong())).thenReturn(movieInfoMono);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenReturn(reviewsFluxToMovieInfoMono);
+
+        var movieMono = movieReactiveService.getMovieInfo(1L);
+
+        StepVerifier.create(movieMono)
+                .expectNextMatches(element -> {
+                    return element.getMovieId().equals(1L) &&
+                    element.getReviewList().size() == 2;
+                })
+                .verifyComplete();
+
+    }
+
+    @Test
+    void getMovieInfoV2() {
+        when(movieInfoService.retrieveMovieInfoMonoUsingId(anyLong())).thenReturn(movieInfoMono);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenReturn(reviewsFluxToMovieInfoMono);
+
+        var movieMono = movieReactiveService.getMovieInfo(1L);
+
+        StepVerifier.create(movieMono).expectNextMatches(element -> {
+                    assertThat(element.getMovieId()).isNotNull();
+                    assertThat(element.getMovieId()).isEqualTo(1L);
+                    assertThat(element.getReviewList().size() == 2).isTrue();
+                    return true;
+                })
+                .verifyComplete();
+
     }
 }
