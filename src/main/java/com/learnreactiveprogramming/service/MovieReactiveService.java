@@ -41,4 +41,13 @@ public class MovieReactiveService {
         });
     }
 
+    public Mono<Movie> getMovieInfoById(long movieId) {
+        return movieInfoService.retrieveMovieInfoMonoUsingId(movieId)
+                .flatMap(info -> {
+                    var reviewsToMono = reviewService.retrieveReviewsFlux(info.getMovieId())
+                            .collectList();
+                    return reviewsToMono.map(reviews ->
+                            new Movie(info.getMovieId(), info, reviews));
+                });
+    }
 }
