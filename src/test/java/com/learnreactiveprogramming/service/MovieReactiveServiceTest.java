@@ -185,4 +185,22 @@ class MovieReactiveServiceTest {
                 .verifyComplete();
 
     }
+
+    @Test
+    void getMovieInfoById() {
+        when(movieInfoService.retrieveMovieInfoMonoUsingId(anyLong())).thenReturn(movieInfoMono);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenReturn(reviewsFluxToMovieInfoMono);
+
+        var movieMono = movieReactiveService.getMovieInfoById(1L);
+
+        StepVerifier.create(movieMono).expectNextMatches(element -> {
+                    assertThat(element.getMovieId()).isNotNull();
+                    assertThat(element.getMovieId()).isEqualTo(1L);
+                    assertThat(element.getReviewList().size() == 2).isTrue();
+                    return true;
+                })
+                .verifyComplete();
+
+
+    }
 }
