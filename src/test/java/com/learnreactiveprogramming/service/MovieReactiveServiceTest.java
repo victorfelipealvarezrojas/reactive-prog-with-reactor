@@ -1,5 +1,6 @@
 package com.learnreactiveprogramming.service;
 
+import com.learnreactiveprogramming.domain.Movie;
 import com.learnreactiveprogramming.domain.MovieInfo;
 import com.learnreactiveprogramming.domain.Review;
 import org.junit.jupiter.api.BeforeEach;
@@ -201,6 +202,30 @@ class MovieReactiveServiceTest {
                 })
                 .verifyComplete();
 
+
+    }
+
+    @Test
+    void getMovieInfoException() {
+        when(movieInfoService.retrieveMovieInfoMonoUsingId(anyLong())).thenReturn(movieInfoMono);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenReturn(reviewsFluxToMovieInfoMono);
+
+        var movieMono = movieReactiveService.getMovieInfoException(1L);
+
+        StepVerifier.create(movieMono)
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    @Test
+    void getAllMoviesException() {
+        when(movieInfoService.movieInfoFlux()).thenReturn(movieInfoFlux);
+        var movieFlux = movieReactiveService.getAllMoviesException();
+
+        StepVerifier.create(movieFlux)
+                .expectNextCount(0)
+                .expectError(RuntimeException.class)
+                .verify();
 
     }
 }
