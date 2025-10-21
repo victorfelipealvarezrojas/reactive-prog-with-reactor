@@ -3,12 +3,15 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.domain.Movie;
 import com.learnreactiveprogramming.domain.MovieInfo;
 import com.learnreactiveprogramming.domain.Review;
+import com.learnreactiveprogramming.exception.MovieException;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.awt.print.PrinterAbortException;
 import java.util.List;
 
+
+@Slf4j
 public class MovieReactiveService {
 
     private MovieInfoService movieInfoService;
@@ -23,8 +26,6 @@ public class MovieReactiveService {
         return movieInfoService.movieInfoFlux()
                 .doOnNext(element -> System.out.println("log-movieInfo::" + element) )
                 .doOnSubscribe(subs -> System.out.println("subs is 1::" + subs))
-                .doOnSubscribe(subs -> System.out.println("subs is 1" +
-                        "2::" + subs))
                 .flatMap(movieInfo -> {
                     Mono<List<Review>> reviewMonoCollect = reviewService.retrieveReviewsFlux(movieInfo.getMovieId())
                             .collectList(); // convert collect flux to mono
@@ -37,8 +38,39 @@ public class MovieReactiveService {
                             )
                     );
                 })
+                .onErrorMap(ex -> {
+                    log.error("Exception is: ", ex);
+                    throw new MovieException(ex);
+                })
                 .doOnNext(element -> System.out.println("log-movie::" + element))
-                .doOnSubscribe(subs -> System.out.println("subs is::" + subs));
+                .doOnSubscribe(subs -> System.out.println("subs is::" + subs))
+                .log();
+    }
+
+    public Flux<Movie> getAllMovies_retry() {
+        return movieInfoService.movieInfoFlux()
+                .doOnNext(element -> System.out.println("log-movieInfo::" + element) )
+                .doOnSubscribe(subs -> System.out.println("subs is 1::" + subs))
+                .flatMap(movieInfo -> {
+                    Mono<List<Review>> reviewMonoCollect = reviewService.retrieveReviewsFlux(movieInfo.getMovieId())
+                            .collectList(); // convert collect flux to mono
+
+                    // reviewMonoCollect es un flujo de tipo mono que contiene un array
+                    return reviewMonoCollect.map(reviewList -> new Movie(
+                                    movieInfo.getMovieId(),
+                                    movieInfo,
+                                    reviewList
+                            )
+                    );
+                })
+                .onErrorMap(ex -> {
+                    log.error("Exception is: ", ex);
+                    return new MovieException(ex);
+                })
+                .doOnNext(element -> System.out.println("log-movie::" + element))
+                .doOnSubscribe(subs -> System.out.println("subs is::" + subs))
+                .retry(3)
+                .log();
     }
 
     public Mono<Movie> getMovieInfo(long movieId) {

@@ -3,6 +3,7 @@ package com.learnreactiveprogramming.service;
 import com.learnreactiveprogramming.domain.Movie;
 import com.learnreactiveprogramming.domain.MovieInfo;
 import com.learnreactiveprogramming.domain.Review;
+import com.learnreactiveprogramming.exception.MovieException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -164,7 +166,7 @@ class MovieReactiveServiceTest {
         StepVerifier.create(movieMono)
                 .expectNextMatches(element -> {
                     return element.getMovieId().equals(1L) &&
-                    element.getReviewList().size() == 2;
+                            element.getReviewList().size() == 2;
                 })
                 .verifyComplete();
 
@@ -224,8 +226,40 @@ class MovieReactiveServiceTest {
 
         StepVerifier.create(movieFlux)
                 .expectNextCount(0)
-                .expectError(RuntimeException.class)
+                .expectErrorMessage("Error Occurred.")
+                //.expectError(RuntimeException.class)
                 .verify();
 
+    }
+
+    @Test
+    void getAllMoviesExceptionHandle() {
+        // Arrange
+        when(movieInfoService.movieInfoFlux()).thenReturn(movieInfoFlux);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenThrow(new RuntimeException("erro"));
+
+        // Act
+        var moviesFlux = movieReactiveService.getAllMovies();
+
+        StepVerifier.create(moviesFlux)
+                .expectError(MovieException.class)
+                .verify();
+    }
+
+
+    @Test
+    void getAllMoviesExceptionHandle_retry() {
+        // Arrange
+        when(movieInfoService.movieInfoFlux()).thenReturn(movieInfoFlux);
+        when(reviewService.retrieveReviewsFlux(anyLong())).thenThrow(new RuntimeException("error"));
+
+        // Act
+        var moviesFlux = movieReactiveService.getAllMovies_retry();
+
+        StepVerifier.create(moviesFlux)
+                .expectError(MovieException.class)
+                .verify();
+
+        verify(reviewService, times(4)).retrieveReviewsFlux(isA(Long.class));
     }
 }
